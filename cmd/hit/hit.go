@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+	"runtime"
+)
 
 const (
 	bannerText = `
@@ -24,6 +28,14 @@ func banner() string { return bannerText[1:] }
 func usage() string  { return usageText[1:] }
 
 func main() {
+	f := &flags{
+		n: 100,
+		c: runtime.NumCPU(),
+	}
+	if err := f.parse(); err != nil {
+		fmt.Println(usage())
+		log.Fatal(err)
+	}
 	fmt.Println(banner())
-	fmt.Println(usage())
+	fmt.Printf("Making %d requests to %s with a concurrency level of %d.\n", f.n, f.url, f.c)
 }
