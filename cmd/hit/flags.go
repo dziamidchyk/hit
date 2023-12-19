@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -16,8 +17,8 @@ type flags struct {
 
 func (f *flags) parse() error {
 	flag.StringVar(&f.url, "url", "", "HTTP server `URL` to make requests (required)")
-	flag.IntVar(&f.n, "n", f.n, "Number of requests to make")
-	flag.IntVar(&f.c, "c", f.c, "Concurrency level")
+	flag.Var(toNumber(&f.n), "n", "Number of requests to make")
+	flag.Var(toNumber(&f.c), "c", "Concurrency level")
 	flag.Parse()
 	if err := f.validate(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -53,4 +54,26 @@ func (f *flags) validateURL(s string) error {
 		err = errors.New("missing host")
 	}
 	return err
+}
+
+type number int
+
+func toNumber(p *int) *number {
+	return (*number)(p)
+}
+
+func (n *number) Set(s string) error {
+	v, err := strconv.ParseInt(s, 0, strconv.IntSize)
+	switch {
+	case err != nil:
+		err = errors.New("parse error")
+	case v <= 0:
+		err = errors.New("should be positive")
+	}
+	*n = number(v)
+	return err
+}
+
+func (n *number) String() string {
+	return strconv.Itoa(int(*n))
 }
