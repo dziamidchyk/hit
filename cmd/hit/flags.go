@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -20,19 +19,21 @@ Usage:
   hit [options] url
 Options:`
 
-func (f *flags) parse() error {
-	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, usageText[1:])
-		flag.PrintDefaults()
+func (f *flags) parse(s *flag.FlagSet, args []string) error {
+	s.Usage = func() {
+		fmt.Fprintln(s.Output(), usageText[1:])
+		s.PrintDefaults()
 	}
-	flag.Var(toNumber(&f.n), "n", "Number of requests to make")
-	flag.Var(toNumber(&f.c), "c", "Concurrency level")
-	flag.Parse()
+	s.Var(toNumber(&f.n), "n", "Number of requests to make")
+	s.Var(toNumber(&f.c), "c", "Concurrency level")
+	if err := s.Parse(args); err != nil {
+		return err
+	}
+	f.url = s.Arg(0)
 
-	f.url = flag.Arg(0)
 	if err := f.validate(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		flag.Usage()
+		fmt.Fprintln(s.Output(), err)
+		s.Usage()
 		return err
 	}
 	return nil
