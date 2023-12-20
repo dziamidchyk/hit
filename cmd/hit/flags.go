@@ -15,11 +15,21 @@ type flags struct {
 	n, c int
 }
 
+const usageText = `
+Usage:
+  hit [options] url
+Options:`
+
 func (f *flags) parse() error {
-	flag.StringVar(&f.url, "url", "", "HTTP server `URL` to make requests (required)")
+	flag.Usage = func() {
+		fmt.Fprintln(os.Stderr, usageText[1:])
+		flag.PrintDefaults()
+	}
 	flag.Var(toNumber(&f.n), "n", "Number of requests to make")
 	flag.Var(toNumber(&f.c), "c", "Concurrency level")
 	flag.Parse()
+
+	f.url = flag.Arg(0)
 	if err := f.validate(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		flag.Usage()
@@ -36,7 +46,7 @@ func (f *flags) validate() error {
 		return fmt.Errorf("-c=%d: should be less than or equal to -n=%d", f.c, f.n)
 	}
 	if err := f.validateURL(f.url); err != nil {
-		return fmt.Errorf("invalid value %q for flag -url: %w", f.url, err)
+		return fmt.Errorf("url: %w", err)
 	}
 	return nil
 }
