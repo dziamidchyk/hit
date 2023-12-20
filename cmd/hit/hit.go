@@ -30,7 +30,7 @@ func run(s *flag.FlagSet, args []string, out io.Writer) error {
 		c: runtime.NumCPU(),
 	}
 	if err := f.parse(s, args); err != nil {
-		os.Exit(1)
+		return err
 	}
 	fmt.Fprintln(out, banner())
 	fmt.Fprintf(out, "Making %d requests to %s with a concurrency level of %d.\n", f.n, f.url, f.c)

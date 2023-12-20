@@ -33,6 +33,19 @@ func TestRun(t *testing.T) {
 			out: "Making 20 requests to http://foo with a concurrency level of 5",
 		},
 	}
+	sad := map[string]string{
+		"url/missing": "",
+		"url/err":     "://foo",
+		"url/host":    "http://",
+		"url/scheme":  "ftp://",
+		"c/err":       "-c=x http://foo",
+		"n/err":       "-n=x http://foo",
+		"c/neg":       "-c=-1 http://foo",
+		"n/neg":       "-n=-1 http://foo",
+		"c/zero":      "-c=0 http://foo",
+		"n/zero":      "-n=0 http://foo",
+		"c/greater":   "-n=1 -c=2 http://foo",
+	}
 	for name, tt := range happy {
 		tt := tt
 		t.Run(name, func(t *testing.T) {
@@ -44,6 +57,20 @@ func TestRun(t *testing.T) {
 			}
 			if out := e.stdout.String(); !strings.Contains(out, tt.out) {
 				t.Errorf("got:\n%s\nwant %q", out, tt.out)
+			}
+		})
+	}
+	for name, in := range sad {
+		in := in
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			e := &testEnv{args: in}
+			if e.run() == nil {
+				t.Fatal("got nil; want err")
+			}
+			if e.stderr.Len() == 0 {
+				t.Fatal("stderr = 0 bytes; want > 0")
 			}
 		})
 	}
