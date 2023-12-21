@@ -11,9 +11,9 @@ import (
 )
 
 type flags struct {
-	url  string
-	n, c int
-	t    time.Duration
+	url, m string
+	n, c   int
+	t      time.Duration
 }
 
 const usageText = `
@@ -28,6 +28,7 @@ func (f *flags) parse(s *flag.FlagSet, args []string) error {
 	}
 	s.Var(toNumber(&f.n), "n", "Number of requests to make")
 	s.Var(toNumber(&f.c), "c", "Concurrency level")
+	s.Var(toMethod(&f.m), "m", "HTTP method")
 	s.DurationVar(&f.t, "t", time.Minute, "Timeout")
 	if err := s.Parse(args); err != nil {
 		return err
@@ -90,4 +91,24 @@ func (n *number) Set(s string) error {
 
 func (n *number) String() string {
 	return strconv.Itoa(int(*n))
+}
+
+type method string
+
+func toMethod(s *string) *method {
+	return (*method)(s)
+}
+
+func (m *method) Set(s string) error {
+	switch s {
+	case "GET", "POST", "PUT":
+		*m = method(s)
+		return nil
+	default:
+		return fmt.Errorf("incorrect method: %s", s)
+	}
+}
+
+func (m *method) String() string {
+	return string(*m)
 }
