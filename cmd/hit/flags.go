@@ -14,6 +14,7 @@ type flags struct {
 	url, m string
 	n, c   int
 	t      time.Duration
+	h      []string
 }
 
 const usageText = `
@@ -28,8 +29,9 @@ func (f *flags) parse(s *flag.FlagSet, args []string) error {
 	}
 	s.Var(toNumber(&f.n), "n", "Number of requests to make")
 	s.Var(toNumber(&f.c), "c", "Concurrency level")
-	s.Var(toMethod(&f.m), "m", "HTTP method")
-	s.DurationVar(&f.t, "t", time.Minute, "Timeout")
+	s.Var(toMethod(&f.m), "m", "Method")
+	s.Var(toHeaders(&f.h), "H", "Headers")
+	s.DurationVar(&f.t, "t", f.t, "Timeout")
 	if err := s.Parse(args); err != nil {
 		return err
 	}
@@ -111,4 +113,19 @@ func (m *method) Set(s string) error {
 
 func (m *method) String() string {
 	return string(*m)
+}
+
+type headers []string
+
+func toHeaders(s *[]string) *headers {
+	return (*headers)(s)
+}
+
+func (h *headers) Set(s string) error {
+	*h = append(*h, s)
+	return nil
+}
+
+func (h *headers) String() string {
+	return strings.Join(*h, ", ")
 }
