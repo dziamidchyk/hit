@@ -4,10 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/a-demidchik/hit/hit"
 )
 
 const bannerText = `
@@ -41,5 +44,24 @@ func run(s *flag.FlagSet, args []string, out io.Writer) error {
 		fmt.Fprintf(out, "Headers: %v\n", strings.Join(f.h, ", "))
 	}
 	fmt.Fprintf(out, "Making %d %s requests to %s with a concurrency level of %d (Timeout=%v).\n", f.n, f.m, f.url, f.c, f.t)
+
+	var sum hit.Result
+	sum.Merge(&hit.Result{
+		Bytes:    1000,
+		Status:   http.StatusOK,
+		Duration: time.Second,
+	})
+	sum.Merge(&hit.Result{
+		Bytes:    1000,
+		Status:   http.StatusOK,
+		Duration: time.Second,
+	})
+	sum.Merge(&hit.Result{
+		Status:   http.StatusTeapot,
+		Duration: 2 * time.Second,
+	})
+	sum.Finalize(2 * time.Second)
+	sum.Fprint(out)
+
 	return nil
 }
