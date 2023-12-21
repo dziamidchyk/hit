@@ -26,12 +26,24 @@ func TestRun(t *testing.T) {
 	happy := map[string]struct{ in, out string }{
 		"url": {
 			in:  "http://foo",
-			out: "Making 100 requests to http://foo with a concurrency level of " + strconv.Itoa(runtime.NumCPU()),
+			out: "Making 100 GET requests to http://foo with a concurrency level of " + strconv.Itoa(runtime.NumCPU()) + " (Timeout=1m0s).",
 		},
 		"n_c": {
 			in:  "-n=20 -c=5 http://foo",
-			out: "Making 20 requests to http://foo with a concurrency level of 5",
+			out: "Making 20 GET requests to http://foo with a concurrency level of 5 (Timeout=1m0s).",
 		},
+		"t": {
+			in:  "-t=5s http://foo",
+			out: "Making 100 GET requests to http://foo with a concurrency level of 8 (Timeout=5s).",
+		},
+		"m": {
+			in:  "-m=POST http://foo",
+			out: "Making 100 POST requests to http://foo with a concurrency level of 8 (Timeout=1m0s).",
+		},
+		// "H": {
+		// 	in:  "-H=\"Accept: text/json\" -H=\"User-agent test\" http://foo",
+		// 	out: "Making 100 GET requests to http://foo with a concurrency level of 8 (Timeout=1m0s).",
+		// },
 	}
 	sad := map[string]string{
 		"url/missing": "",
@@ -45,6 +57,8 @@ func TestRun(t *testing.T) {
 		"c/zero":      "-c=0 http://foo",
 		"n/zero":      "-n=0 http://foo",
 		"c/greater":   "-n=1 -c=2 http://foo",
+		"t/err":       "-t=foo http://foo",
+		"m/err":       "-m=DELETE http://foo",
 	}
 	for name, tt := range happy {
 		tt := tt
