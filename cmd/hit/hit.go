@@ -33,6 +33,6 @@ func run(s *flag.FlagSet, args []string, out io.Writer) error {
 		return err
 	}
 	fmt.Fprintln(out, banner())
-	fmt.Fprintf(out, "Making %d requests to %s with a concurrency level of %d.\n", f.n, f.url, f.c)
+	fmt.Fprintf(out, "Making %d requests to %s with a concurrency level of %d (Timeout=%v).\n", f.n, f.url, f.c, f.t)
 	return nil
 }

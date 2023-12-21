@@ -7,11 +7,13 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type flags struct {
 	url  string
 	n, c int
+	t    time.Duration
 }
 
 const usageText = `
@@ -26,6 +28,7 @@ func (f *flags) parse(s *flag.FlagSet, args []string) error {
 	}
 	s.Var(toNumber(&f.n), "n", "Number of requests to make")
 	s.Var(toNumber(&f.c), "c", "Concurrency level")
+	s.DurationVar(&f.t, "t", time.Minute, "Timeout")
 	if err := s.Parse(args); err != nil {
 		return err
 	}
