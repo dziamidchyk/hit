@@ -26,8 +26,8 @@ func (c *Client) do(r *http.Request, n int) *Result {
 		p = throttle(p, time.Second/time.Duration(c.RPS*c.C))
 	}
 	var sum Result
-	for ; n > 0; n-- {
-		sum.Merge(Send(r))
+	for result := range split(p, c.C, Send) {
+		sum.Merge(result)
 	}
 	return &sum
 }

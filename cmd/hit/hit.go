@@ -45,12 +45,18 @@ func run(s *flag.FlagSet, args []string, out io.Writer) error {
 		fmt.Fprintf(out, "Headers: %v\n", strings.Join(f.h, ", "))
 	}
 	fmt.Fprintf(out, "Making %d %s requests to %s with a concurrency level of %d (Timeout=%v).\n", f.n, f.m, f.url, f.c, f.t)
+	if f.rps > 0 {
+		fmt.Fprintf(out, "(RPS: %d)\n", f.rps)
+	}
 
 	request, err := http.NewRequest(http.MethodGet, f.url, http.NoBody)
 	if err != nil {
 		return err
 	}
-	var c hit.Client
+	c := &hit.Client{
+		C:   f.c,
+		RPS: f.rps,
+	}
 	sum := c.Do(request, f.n)
 	sum.Fprint(out)
 
