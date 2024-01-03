@@ -37,7 +37,7 @@ func run(s *flag.FlagSet, args []string, out io.Writer) error {
 	f := &flags{
 		n: 100,
 		c: runtime.NumCPU(),
-		t: time.Second,
+		t: time.Minute,
 		m: "GET",
 	}
 	if err := f.parse(s, args); err != nil {

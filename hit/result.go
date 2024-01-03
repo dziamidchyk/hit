@@ -10,14 +10,14 @@ import (
 
 type Result struct {
 	RPS      float64       // requests per second
-	Requests int           //number of requesys made
+	Requests int           //number of requests made
 	Errors   int           // number of errors occured
 	Bytes    int64         //number of bytesdownloaded
 	Duration time.Duration //single or all requests' duration
 	Fastest  time.Duration //fastest request result duration among other
 	Slowest  time.Duration //slowest request result duration among other
 	Status   int           // request HTTP status code
-	Error    error         //error is not nill if the request is failed
+	Error    error         //error is not nil if the request is failed
 }
 
 func (r *Result) Merge(o *Result) {
