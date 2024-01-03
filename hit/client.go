@@ -12,15 +12,15 @@ type Client struct {
 	RPS int // throttles the requests per second
 }
 
-func (c *Client) Do(r *http.Request, n int) *Result {
+func (c *Client) Do(ctx context.Context, r *http.Request, n int) *Result {
 	t := time.Now()
-	sum := c.do(r, n)
+	sum := c.do(ctx, r, n)
 	return sum.Finalize(time.Since(t))
 }
 
-func (c *Client) do(r *http.Request, n int) *Result {
-	p := produce(n, func() *http.Request {
-		return r.Clone(context.TODO())
+func (c *Client) do(ctx context.Context, r *http.Request, n int) *Result {
+	p := produce(ctx, n, func() *http.Request {
+		return r.Clone(ctx)
 	})
 	if c.RPS > 0 {
 		p = throttle(p, time.Second/time.Duration(c.RPS*c.C))

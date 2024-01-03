@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -34,7 +36,7 @@ func run(s *flag.FlagSet, args []string, out io.Writer) error {
 	f := &flags{
 		n: 100,
 		c: runtime.NumCPU(),
-		t: time.Minute,
+		t: time.Second,
 		m: "GET",
 	}
 	if err := f.parse(s, args); err != nil {
@@ -57,8 +59,14 @@ func run(s *flag.FlagSet, args []string, out io.Writer) error {
 		C:   f.c,
 		RPS: f.rps,
 	}
-	sum := c.Do(request, f.n)
+
+	ctx, cancel := context.WithTimeout(context.Background(), f.t)
+	defer cancel()
+	sum := c.Do(ctx, request, f.n)
 	sum.Fprint(out)
 
+	if err := ctx.Err(); errors.Is(err, context.DeadlineExceeded) {
+		return fmt.Errorf("timed out in %s", f.t)
+	}
 	return nil
 }
