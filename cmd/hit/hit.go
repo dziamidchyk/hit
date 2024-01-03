@@ -57,8 +57,9 @@ func run(s *flag.FlagSet, args []string, out io.Writer) error {
 		return err
 	}
 	c := &hit.Client{
-		C:   f.c,
-		RPS: f.rps,
+		C:       f.c,
+		RPS:     f.rps,
+		Timeout: 10 * time.Second,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), f.t)

@@ -8,8 +8,9 @@ import (
 )
 
 type Client struct {
-	C   int // concurrency level
-	RPS int // throttles the requests per second
+	C       int           // concurrency level
+	RPS     int           // throttles the requests per second
+	Timeout time.Duration // Timeout per request
 }
 
 func (c *Client) Do(ctx context.Context, r *http.Request, n int) *Result {
@@ -25,8 +26,12 @@ func (c *Client) do(ctx context.Context, r *http.Request, n int) *Result {
 	if c.RPS > 0 {
 		p = throttle(p, time.Second/time.Duration(c.RPS*c.C))
 	}
-	var sum Result
-	for result := range split(p, c.C, Send) {
+	var (
+		sum    Result
+		client = c.client()
+	)
+	defer client.CloseIdleConnections()
+	for result := range split(p, c.C, c.send(client)) {
 		sum.Merge(result)
 	}
 	return &sum
@@ -34,14 +39,14 @@ func (c *Client) do(ctx context.Context, r *http.Request, n int) *Result {
 
 type SendFunc func(*http.Request) *Result
 
-func Send(r *http.Request) *Result {
+func Send(c *http.Client, r *http.Request) *Result {
 	t := time.Now()
 
 	var (
 		code  int
 		bytes int64
 	)
-	response, err := http.DefaultClient.Do(r)
+	response, err := c.Do(r)
 	if err == nil {
 		code = response.StatusCode
 		bytes, err = io.Copy(io.Discard, response.Body)
@@ -53,5 +58,20 @@ func Send(r *http.Request) *Result {
 		Bytes:    bytes,
 		Status:   code,
 		Error:    err,
+	}
+}
+
+func (c *Client) send(client *http.Client) SendFunc {
+	return func(r *http.Request) *Result {
+		return Send(client, r)
+	}
+}
+
+func (c *Client) client() *http.Client {
+	return &http.Client{
+		Timeout: c.Timeout,
+		Transport: &http.Transport{
+			MaxIdleConnsPerHost: c.C,
+		},
 	}
 }
