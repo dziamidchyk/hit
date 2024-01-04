@@ -20,9 +20,7 @@ func TestClientDo(t *testing.T) {
 		request = newRequest(t, http.MethodGet, server.URL)
 	)
 
-	c := &Client{
-		C: 1,
-	}
+	var c Client
 	sum := c.Do(context.Background(), request, wantHits)
 	if got := gotHits.Load(); got != wantHits {
 		t.Errorf("hits=%d; want %d", got, wantHits)
