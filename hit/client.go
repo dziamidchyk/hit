@@ -2,6 +2,7 @@ package hit
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"runtime"
@@ -82,4 +83,13 @@ func (c *Client) concurrency() int {
 		return c.C
 	}
 	return runtime.NumCPU()
+}
+
+func Do(ctx context.Context, url string, n int) (*Result, error) {
+	r, err := http.NewRequest(http.MethodGet, url, http.NoBody)
+	if err != nil {
+		return nil, fmt.Errorf("new http request: %w", err)
+	}
+	var c Client
+	return c.Do(ctx, r, n), nil
 }
