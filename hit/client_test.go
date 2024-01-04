@@ -12,18 +12,13 @@ func TestClientDo(t *testing.T) {
 	t.Parallel()
 
 	const wantHits, wantErrors = 10, 0
-	var gotHits atomic.Int64
-
-	handler := func(_ http.ResponseWriter, _ *http.Request) {
-		gotHits.Add(1)
-	}
-
-	server := httptest.NewServer(http.HandlerFunc(handler))
-	defer server.Close()
-	request, err := http.NewRequest(http.MethodGet, server.URL, http.NoBody)
-	if err != nil {
-		t.Fatalf("NewRequest err=%q; want nil", err)
-	}
+	var (
+		gotHits atomic.Int64
+		server  = newTestServer(t, func(_ http.ResponseWriter, _ *http.Request) {
+			gotHits.Add(1)
+		})
+		request = newRequest(t, http.MethodGet, server.URL)
+	)
 
 	c := &Client{
 		C: 1,
@@ -38,4 +33,19 @@ func TestClientDo(t *testing.T) {
 	if got := sum.Errors; got != wantErrors {
 		t.Errorf("Errors=%d; want %d", got, wantErrors)
 	}
+}
+
+func newTestServer(tb testing.TB, h http.HandlerFunc) *httptest.Server {
+	tb.Helper()
+	s := httptest.NewServer(h)
+	tb.Cleanup(s.Close)
+	return s
+}
+
+func newRequest(tb testing.TB, method, url string) *http.Request {
+	r, err := http.NewRequest(method, url, http.NoBody)
+	if err != nil {
+		tb.Fatalf("newRequest(%q, %q) err=%q; want nil", method, url, err)
+	}
+	return r
 }
