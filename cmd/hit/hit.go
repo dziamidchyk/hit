@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/a-demidchik/hit/hit"
+	"github.com/dziamidchyk/hit/hit"
 )
 
 const bannerText = `
