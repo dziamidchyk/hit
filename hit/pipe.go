@@ -14,7 +14,6 @@ func Produce(ctx context.Context, out chan<- *http.Request, n int, fn func() *ht
 			return
 		case out <- fn():
 		}
-		out <- fn()
 	}
 }
 
