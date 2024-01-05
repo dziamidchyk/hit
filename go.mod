@@ -1,3 +1,3 @@
-module github.com/a-demidchik/hit
+module github.com/dziamidchyk/hit
 
 go 1.21.0
