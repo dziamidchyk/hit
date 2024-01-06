@@ -85,11 +85,28 @@ func (c *Client) concurrency() int {
 	return runtime.NumCPU()
 }
 
-func Do(ctx context.Context, url string, n int) (*Result, error) {
+type OptionFunc func(*Client)
+
+func WithConcurrency(n int) OptionFunc {
+	return func(c *Client) {
+		c.C = n
+	}
+}
+
+func WithTimeout(d time.Duration) OptionFunc {
+	return func(c *Client) {
+		c.Timeout = d
+	}
+}
+
+func Do(ctx context.Context, url string, n int, options ...OptionFunc) (*Result, error) {
 	r, err := http.NewRequest(http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("new http request: %w", err)
 	}
 	var c Client
+	for _, fn := range options {
+		fn(&c)
+	}
 	return c.Do(ctx, r, n), nil
 }
